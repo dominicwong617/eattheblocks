@@ -23,3 +23,49 @@ async function calculateSupplyApy(cToken) {
 
   return 100 * (Math.pow((supplyRatePerBlock / ethMantissa * blocksPerDay) + 1, daysPerYear - 1) - 1);
 }
+
+async function calculateCompApy(cToken, ticker underlyingDecimals) {
+  let compSpeed = await Compound.eth.read(
+    comptroller,
+    'function compSpeeds(address cToken) public view returns(uint)',
+    [cToken],
+    { provider },
+  );
+
+  let compPrice = await Compound.eth.read(
+    opf,
+    'function price(string memory symbol) external view returns(uint)',
+    [Compound.COMP],
+    { provider },
+  );
+
+  let underlyingPrice = await Compound.eth.read(
+    opf,
+    'function price(string memory symbol) external view returns(uint)',
+    [ticker],
+    { provider },
+  );
+
+  let totalSupply = await Compound.eth.read(
+    cToken,
+    'function totalSupply() public view returns(uint)',
+    [],
+    { provider },
+  );
+
+  let exchangeRate = await Compound.eth.read(
+    cToken,
+    'function exchangeRateCurrent() public returns(unit)',
+    [],
+    { provider },
+  );
+
+  compSpeed = compSpeed / 1e18;
+  compPrice = compPrice / 1e6;
+  underlyingPrice = underlyingPrice / 1e6;
+  exchangeRate = +exchangeRate.toString() / ethMantissa;
+  totalSupply = +totalSupply().toString() * exchangeRate * underlyingPrice / Math.pow(10, underlyingDecimals);
+  const compPerDay = compSpeed * blocksPerDay;
+
+  return 100 * (compPrice * compPerDay / totalSupply) * daysPerYear;
+}
