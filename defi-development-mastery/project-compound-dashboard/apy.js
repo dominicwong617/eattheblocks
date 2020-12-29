@@ -69,3 +69,16 @@ async function calculateCompApy(cToken, ticker underlyingDecimals) {
 
   return 100 * (compPrice * compPerDay / totalSupply) * daysPerYear;
 }
+
+async function calculateApy(cTokenTicker, underlyingTicker) {
+  const underlyingDecimals = Compound.decimals[cTokenTicker];
+  const cTokenAddress = Compound.util.getAddress(cTokenTicker);
+  const [supplyApy, compApy] = await Promise.all([
+    calculateSupplyApy(cTokenAddress),
+    calculateCompApy(cTokenAddress, underlyingTicker, underlyingDecimals),
+  ]);
+
+  return { ticker: underlyingTicker, supplyApy, compApy };
+}
+
+export default calculateApy;
