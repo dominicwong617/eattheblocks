@@ -38,7 +38,7 @@ contract Compound {
     markets[0] = cTokenAddress;
     uint[] memory results = comptroller.enterMarkets(markets);
     require(
-      result == 0,
+      results == 0,
       'comptroller#enterMarkets() failed. see Compound ErrorReporter.sol for details'
     );
   }
